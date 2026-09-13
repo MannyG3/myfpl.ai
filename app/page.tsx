@@ -18,6 +18,8 @@ import { PickTeamTransferPlan, ProcessedPlayer } from '@/types/fpl';
 
 const DEFAULT_TEAM_ID = 1523974;
 
+export type DashboardView = 'team' | 'points' | 'transfers' | 'insights';
+
 function formatDeadline(iso?: string) {
   if (!iso) return 'Deadline TBC';
   const date = new Date(iso);
@@ -34,7 +36,7 @@ function formatDeadline(iso?: string) {
   );
 }
 
-export default function DashboardPage() {
+export default function DashboardPage({ view = 'team' }: { view?: DashboardView }) {
   const [teamId, setTeamId] = useState<number>(DEFAULT_TEAM_ID);
   const [selectedGameweek, setSelectedGameweek] = useState<number | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -133,6 +135,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#37003C] text-white flex flex-col font-sans">
       <Navbar
+        activeView={view}
         currentGameweek={displayGw}
         teamId={teamId}
         teamName={overview.teamName || 'My FPL Analyser'}
@@ -178,9 +181,9 @@ export default function DashboardPage() {
               onReviewTransfer={() => scrollToSection('transfers')}
               onReviewRisk={() => scrollToSection('squad')}
             />
-            <div className="mb-6"><WeeklyChecklist /></div>
+            {(view === 'team' || view === 'transfers') && <div className="mb-6"><WeeklyChecklist /></div>}
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div id="points" className="w-full lg:w-1/3 space-y-6 scroll-mt-6">
+            {(view === 'team' || view === 'points') && <div id="points" className="w-full lg:w-1/3 space-y-6 scroll-mt-6">
               <TeamOverview
                 currentGameweek={displayGw}
                 squad={data?.squad || []}
@@ -192,7 +195,7 @@ export default function DashboardPage() {
                 squadValue={overview.squadValue}
                 bank={overview.bank}
               />
-            </div>
+            </div>}
 
             <div className="w-full lg:w-2/3 space-y-6">
               {error && (
@@ -200,7 +203,7 @@ export default function DashboardPage() {
                   {error}
                 </div>
               )}
-              <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-3 flex items-center justify-between">
+              {(view === 'team' || view === 'points') && <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-3 flex items-center justify-between">
                 <button
                   type="button"
                   disabled={displayGw <= 1 || isLoading}
@@ -230,18 +233,20 @@ export default function DashboardPage() {
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
-              </div>
+              </div>}
 
-              <div id="insights" className="scroll-mt-6"><AiInsights aiInsights={data?.aiInsights} /></div>
-              <div id="captain" className="scroll-mt-6"><CaptainPicks captainPicks={data?.captainPicks || []} onSelectPlayer={setSelectedPlayer} /></div>
-              <div id="transfers" className="scroll-mt-6"><TransferAlerts transferAlerts={data?.transferAlerts || []} onSelectPlayer={setSelectedPlayer} /></div>
-              <PickTeamTransfers pickTeamTransferPlan={data?.pickTeamTransferPlan} />
+              {view === 'insights' && <div id="insights" className="scroll-mt-6"><AiInsights aiInsights={data?.aiInsights} /></div>}
+              {view === 'team' && <div id="captain" className="scroll-mt-6"><CaptainPicks captainPicks={data?.captainPicks || []} onSelectPlayer={setSelectedPlayer} /></div>}
+              {view === 'transfers' && <>
+                <div id="transfers" className="scroll-mt-6"><TransferAlerts transferAlerts={data?.transferAlerts || []} onSelectPlayer={setSelectedPlayer} /></div>
+                <PickTeamTransfers pickTeamTransferPlan={data?.pickTeamTransferPlan} />
+              </>}
 
-              <div id="squad" className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5 scroll-mt-6">
+              {view === 'team' && <div id="squad" className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5 scroll-mt-6">
                 <SquadGrid squad={data?.squad || []} onSelectPlayer={setSelectedPlayer} />
-              </div>
+              </div>}
 
-              <FormTrendChart
+              {view === 'points' && <FormTrendChart
                 data={data?.formTrendChartData || []}
                 squadPlayers={(data?.squad || [])
                   .filter((p: any) => !p.is_bench)
@@ -254,9 +259,9 @@ export default function DashboardPage() {
                     id: p.id,
                     web_name: p.web_name,
                   }))}
-              />
+              />}
 
-              <DifferentialTable differentials={data?.differentialPicks || []} />
+              {view === 'insights' && <DifferentialTable differentials={data?.differentialPicks || []} />}
             </div>
             </div>
           </>

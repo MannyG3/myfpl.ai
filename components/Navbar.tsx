@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 
 interface NavbarProps {
+  activeView?: 'team' | 'points' | 'transfers' | 'insights';
   currentGameweek: number;
   teamId: number;
   teamName?: string;
@@ -14,6 +15,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({
+  activeView = 'team',
   currentGameweek,
   teamId,
   teamName = 'My FPL Team',
@@ -98,18 +100,30 @@ export default function Navbar({
         </div>
 
         <nav aria-label="Dashboard sections" className="flex gap-6 overflow-x-auto border-t border-white/10 py-3 text-sm font-semibold text-slate-300">
-          <a href="#points" aria-current="page" className="whitespace-nowrap border-b-2 border-white pb-3 text-white">My Team</a>
-          <a href="#points" className="whitespace-nowrap pb-3 transition hover:text-white">Points</a>
-          <a href="#transfers" className="whitespace-nowrap pb-3 transition hover:text-white">Transfers</a>
-          <a href="#insights" className="whitespace-nowrap pb-3 transition hover:text-white">Insights</a>
+          <NavLink href="/team" active={activeView === 'team'}>My Team</NavLink>
+          <NavLink href="/points" active={activeView === 'points'}>Points</NavLink>
+          <NavLink href="/transfers" active={activeView === 'transfers'}>Transfers</NavLink>
+          <NavLink href="/insights" active={activeView === 'insights'}>Insights</NavLink>
         </nav>
       </div>
       <nav aria-label="Mobile dashboard navigation" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-white/10 bg-[#0b1d3d]/95 p-2 text-center text-[10px] font-bold uppercase tracking-[0.08em] text-slate-300 shadow-2xl backdrop-blur md:hidden">
-        <a href="#points" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Overview</a>
-        <a href="#squad" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Squad</a>
-        <a href="#transfers" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Transfers</a>
-        <a href="#insights" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Insights</a>
+        <a href="/points" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Points</a>
+        <a href="/team" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">My Team</a>
+        <a href="/transfers" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Transfers</a>
+        <a href="/insights" className="rounded-lg px-2 py-2 hover:bg-white/10 hover:text-white">Insights</a>
       </nav>
     </header>
+  );
+}
+
+function NavLink({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={`whitespace-nowrap pb-3 transition hover:text-white ${active ? 'border-b-2 border-white text-white' : ''}`}
+    >
+      {children}
+    </a>
   );
 }
