@@ -170,7 +170,7 @@ export default function DashboardPage({ view = 'team' }: { view?: DashboardView 
           </div>
         ) : (
           <>
-            <DeadlineActions
+            {view !== 'team' && <DeadlineActions
               currentGameweek={displayGw}
               deadlineTime={overview.deadlineTime}
               updatedAt={data?.timestamp}
@@ -180,8 +180,8 @@ export default function DashboardPage({ view = 'team' }: { view?: DashboardView 
               onReviewCaptain={() => scrollToSection('captain')}
               onReviewTransfer={() => scrollToSection('transfers')}
               onReviewRisk={() => scrollToSection('squad')}
-            />
-            {(view === 'team' || view === 'transfers') && <div className="mb-6"><WeeklyChecklist /></div>}
+            />}
+            {view !== 'team' && (view === 'transfers' || view === 'insights') && <div className="mb-6"><WeeklyChecklist /></div>}
             <div className="flex flex-col lg:flex-row gap-8 items-start">
             {(view === 'team' || view === 'points') && <div id="points" className="w-full lg:w-1/3 space-y-6 scroll-mt-6">
               <TeamOverview

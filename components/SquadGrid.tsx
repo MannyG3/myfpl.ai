@@ -118,8 +118,16 @@ function PitchPlayer({ player, onSelectPlayer }: { player: SquadPlayer; onSelect
   const shirtColor = player.position === 'GK' ? 'bg-lime-500' : player.position === 'DEF' ? 'bg-sky-600' : player.position === 'MID' ? 'bg-red-600' : 'bg-slate-800';
   return (
     <button type="button" onClick={() => onSelectPlayer?.(player)} className="group flex min-w-0 flex-1 max-w-[150px] flex-col items-center text-center focus:outline-none focus:ring-2 focus:ring-white/90">
-      <div className="relative h-10 w-10 sm:h-14 sm:w-14">
-        <div className={`absolute inset-x-1 bottom-0 h-8 rounded-t-[45%] ${shirtColor} shadow-lg transition group-hover:-translate-y-1 sm:h-11`} />
+      <div className="relative h-12 w-12 sm:h-16 sm:w-16">
+        <img
+          src={`https://resources.premierleague.com/premierleague/photos/players/110x140/${player.id}.png`}
+          alt=""
+          className="absolute inset-0 z-10 h-full w-full object-contain drop-shadow-lg transition group-hover:-translate-y-1"
+          onError={(event) => {
+            event.currentTarget.style.display = 'none';
+          }}
+        />
+        <div className={`absolute inset-x-1 bottom-0 h-8 rounded-t-[45%] ${shirtColor} shadow-lg sm:h-11`} />
         <div className="absolute left-1/2 top-0 h-5 w-5 -translate-x-1/2 rounded-full bg-[#f1c6a5] shadow-sm sm:h-7 sm:w-7" />
         {player.is_captain && <span className="absolute -right-1 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-black text-[#173b3a]">C</span>}
         {player.is_vice_captain && <span className="absolute -right-1 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-violet-300 text-[10px] font-black text-[#173b3a]">V</span>}

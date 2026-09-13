@@ -12,6 +12,7 @@
   --fpl-cyan: #5fe7ff;
   --fpl-violet: #5b2df0;
   --border: #dfe7f5;
+  --content-width: 1320px;
 }
 
 html {
@@ -25,6 +26,18 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+}
+
+button,
+a,
+select,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #04f5ff;
+  color: #0b1d3d;
 }
 
 * {
