@@ -1,13 +1,16 @@
 'use client';
 
 import { TransferSuggestion } from '@/types/fpl';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
+import { useState } from 'react';
 
 interface TransferAlertsProps {
   transferAlerts: TransferSuggestion[];
+  onSelectPlayer?: (player: TransferSuggestion['outPlayer']) => void;
 }
 
-export default function TransferAlerts({ transferAlerts }: TransferAlertsProps) {
+export default function TransferAlerts({ transferAlerts, onSelectPlayer }: TransferAlertsProps) {
+  const [savedTransfers, setSavedTransfers] = useState<number[]>([]);
   if (!transferAlerts || transferAlerts.length === 0) {
     return (
       <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5">
@@ -19,12 +22,20 @@ export default function TransferAlerts({ transferAlerts }: TransferAlertsProps) 
     );
   }
 
+  const urgentAlerts = transferAlerts.filter((alert) =>
+    alert.outPlayer.status !== 'available' || alert.outPlayer.minutesSecurityPercent < 60
+  );
+  const watchlistAlerts = transferAlerts.filter((alert) => !urgentAlerts.includes(alert));
+  const toggleSaved = (index: number) => {
+    setSavedTransfers((items) => items.includes(index) ? items.filter((item) => item !== index) : [...items, index]);
+  };
+
   return (
     <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5">
       <div className="flex items-center justify-between gap-2 mb-4">
         <h2 className="text-xl font-bold text-white">Transfer Alerts</h2>
         <span className="text-xs text-[#C9B7D4]">
-          {transferAlerts.length} squad warning{transferAlerts.length > 1 ? 's' : ''}
+          {urgentAlerts.length} urgent • {watchlistAlerts.length} watchlist
         </span>
       </div>
 
@@ -37,14 +48,19 @@ export default function TransferAlerts({ transferAlerts }: TransferAlertsProps) 
             {/* Out Player */}
             <div className="flex-1 bg-[#1F0A29] border border-rose-500/30 rounded-lg p-3">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="bg-rose-500/20 text-rose-300 font-bold px-2 py-0.5 rounded-full text-[10px]">
-                  SWAP OUT
+                <span className={`${urgentAlerts.includes(alert) ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-200'} font-bold px-2 py-0.5 rounded-full text-[10px]`}>
+                  {urgentAlerts.includes(alert) ? 'ACT NOW' : 'WATCHLIST'}
                 </span>
-                <span className="text-[#C9B7D4]">£{alert.outPlayer.price}m</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#C9B7D4]">£{alert.outPlayer.price}m</span>
+                  <button type="button" aria-label={`${savedTransfers.includes(idx) ? 'Remove' : 'Save'} ${alert.outPlayer.web_name} transfer`} onClick={() => toggleSaved(idx)} className="rounded p-1 text-cyan-200 hover:bg-[#2B0032] focus:outline-none focus:ring-2 focus:ring-cyan-300">
+                    {savedTransfers.includes(idx) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-              <h3 className="font-bold text-white text-base">
+                <button type="button" onClick={() => onSelectPlayer?.(alert.outPlayer)} className="text-left font-bold text-white text-base hover:text-cyan-200">
                 {alert.outPlayer.web_name}
-              </h3>
+                </button>
               <p className="text-xs text-[#C9B7D4]">
                 {alert.outPlayer.team_short_name} ({alert.outPlayer.position})
               </p>
@@ -68,13 +84,15 @@ export default function TransferAlerts({ transferAlerts }: TransferAlertsProps) 
                     <span className="bg-[#4A0E5C] text-[#04F5FF] font-bold px-2 py-0.5 rounded-full text-[10px]">
                       BUY OPTION
                     </span>
-                    <span className="text-[#C9B7D4]">£{cand.price}m</span>
+                    <span className={cand.minutesSecurityPercent < 60 ? 'text-amber-300' : 'text-[#C9B7D4]'}>
+                      {cand.minutesSecurityPercent < 60 ? 'High risk • ' : ''}£{cand.price}m
+                    </span>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-white text-sm">
+                    <button type="button" onClick={() => onSelectPlayer?.(cand)} className="text-left font-bold text-white text-sm hover:text-cyan-200">
                       {cand.web_name}
-                    </h4>
+                    </button>
                     <p className="text-xs text-[#C9B7D4]">
                       {cand.team_short_name} • {cand.position}
                     </p>
@@ -100,6 +118,12 @@ export default function TransferAlerts({ transferAlerts }: TransferAlertsProps) 
           </div>
         ))}
       </div>
+      {savedTransfers.length > 0 && (
+        <div className="mt-4 rounded-lg border border-cyan-300/20 bg-cyan-300/5 p-3 text-xs text-cyan-100">
+          <strong>{savedTransfers.length} transfer{savedTransfers.length === 1 ? '' : 's'} saved</strong>
+          <span className="ml-2 text-[#C9B7D4]">Use the shortlist to compare before committing.</span>
+        </div>
+      )}
     </div>
   );
 }

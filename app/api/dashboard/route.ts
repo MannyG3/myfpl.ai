@@ -16,6 +16,7 @@ import {
   generateTransferSuggestions,
   recommendCaptains,
   buildAiInsights,
+  buildPickTeamTransferPlan,
   mapPosition,
     mapStatus,
     estimateMinutesSecurity,
@@ -65,11 +66,9 @@ export async function GET(request: Request) {
       );
     }
 
-    try {
-      await initDb();
-    } catch (dbErr) {
+    void initDb().catch((dbErr) => {
       console.warn('[Dashboard API] Database unavailable, serving live FPL data only:', dbErr);
-    }
+    });
 
     const [bootstrap, fixtures, entry] = await Promise.all([
       fetchBootstrapStatic(),
@@ -276,6 +275,11 @@ export async function GET(request: Request) {
       captainPicks,
       transferAlerts,
     });
+    const pickTeamTransferPlan = buildPickTeamTransferPlan({
+      squad: mySquadPlayers,
+      allPlayers: allProcessedPlayers,
+      currentGameweek: currentEvent.id,
+    });
 
     return NextResponse.json({
       success: true,
@@ -285,6 +289,7 @@ export async function GET(request: Request) {
       squad: mySquadPlayers,
       captainPicks,
       transferAlerts,
+      pickTeamTransferPlan,
       differentialPicks,
       formTrendChartData,
       aiInsights,

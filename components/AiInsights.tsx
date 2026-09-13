@@ -87,9 +87,18 @@ export default function AiInsights({ aiInsights }: AiInsightsProps) {
                   <Icon className="h-3 w-3" />
                   {move.title}
                 </span>
-                <span className="text-[#04F5FF] font-bold text-xs">{move.score}</span>
+                <span className="text-right text-xs font-bold text-[#04F5FF]">
+                  <span className="block">{move.score}/100</span>
+                  <span className="block text-[9px] uppercase tracking-[0.08em] text-[#C9B7D4]">
+                    {move.score >= 85 ? 'High confidence' : move.score >= 65 ? 'Medium confidence' : 'Watch'}
+                  </span>
+                </span>
               </div>
               <p className="text-xs text-[#C9B7D4] leading-relaxed">{move.description}</p>
+              <details className="mt-3 border-t border-[#3B1348] pt-2 text-[11px] text-[#C9B7D4]">
+                <summary className="cursor-pointer font-bold text-cyan-200">Why this is recommended</summary>
+                <p className="mt-2 leading-relaxed">This score combines the signal strength with recent form, fixture difficulty, and expected minutes. Check the player detail before making a final move.</p>
+              </details>
             </div>
           );
         })}

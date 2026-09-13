@@ -9,7 +9,12 @@ import TransferAlerts from '@/components/TransferAlerts';
 import FormTrendChart from '@/components/FormTrendChart';
 import DifferentialTable from '@/components/DifferentialTable';
 import AiInsights from '@/components/AiInsights';
+import PickTeamTransfers from '@/components/PickTeamTransfers';
+import DeadlineActions from '@/components/DeadlineActions';
+import PlayerDetails from '@/components/PlayerDetails';
+import WeeklyChecklist from '@/components/WeeklyChecklist';
 import { Loader2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PickTeamTransferPlan, ProcessedPlayer } from '@/types/fpl';
 
 const DEFAULT_TEAM_ID = 1523974;
 
@@ -32,10 +37,11 @@ function formatDeadline(iso?: string) {
 export default function DashboardPage() {
   const [teamId, setTeamId] = useState<number>(DEFAULT_TEAM_ID);
   const [selectedGameweek, setSelectedGameweek] = useState<number | null>(null);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<ProcessedPlayer | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const requestIdRef = useRef(0);
 
@@ -103,6 +109,15 @@ export default function DashboardPage() {
   const currentGwCeiling = data?.currentGameweek || data?.gameweek || 1;
   const displayGw = selectedGameweek || data?.gameweek || 1;
   const overview = data?.overview || {};
+  const captain = data?.captainPicks?.[0];
+  const urgentTransfer = data?.transferAlerts?.[0];
+  const riskCount = (data?.squad || []).filter(
+    (player) => player.status !== 'available' || player.minutesSecurityPercent < 60
+  ).length;
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   if (!isMounted) {
     return (
@@ -127,7 +142,7 @@ export default function DashboardPage() {
         isSyncing={isSyncing}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 pb-20 pt-6 md:px-8 md:pb-6">
         {isLoading && !data ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
             <Loader2 className="h-10 w-10 text-[#04F5FF] animate-spin" />
@@ -151,8 +166,21 @@ export default function DashboardPage() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="w-full lg:w-1/3 space-y-6">
+          <>
+            <DeadlineActions
+              currentGameweek={displayGw}
+              deadlineTime={overview.deadlineTime}
+              updatedAt={data?.timestamp}
+              captain={captain}
+              transfer={urgentTransfer}
+              riskCount={riskCount}
+              onReviewCaptain={() => scrollToSection('captain')}
+              onReviewTransfer={() => scrollToSection('transfers')}
+              onReviewRisk={() => scrollToSection('squad')}
+            />
+            <div className="mb-6"><WeeklyChecklist /></div>
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div id="points" className="w-full lg:w-1/3 space-y-6 scroll-mt-6">
               <TeamOverview
                 currentGameweek={displayGw}
                 squad={data?.squad || []}
@@ -204,12 +232,13 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              <AiInsights aiInsights={data?.aiInsights} />
-              <CaptainPicks captainPicks={data?.captainPicks || []} />
-              <TransferAlerts transferAlerts={data?.transferAlerts || []} />
+              <div id="insights" className="scroll-mt-6"><AiInsights aiInsights={data?.aiInsights} /></div>
+              <div id="captain" className="scroll-mt-6"><CaptainPicks captainPicks={data?.captainPicks || []} onSelectPlayer={setSelectedPlayer} /></div>
+              <div id="transfers" className="scroll-mt-6"><TransferAlerts transferAlerts={data?.transferAlerts || []} onSelectPlayer={setSelectedPlayer} /></div>
+              <PickTeamTransfers pickTeamTransferPlan={data?.pickTeamTransferPlan} />
 
-              <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5">
-                <SquadGrid squad={data?.squad || []} />
+              <div id="squad" className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5 scroll-mt-6">
+                <SquadGrid squad={data?.squad || []} onSelectPlayer={setSelectedPlayer} />
               </div>
 
               <FormTrendChart
@@ -229,13 +258,51 @@ export default function DashboardPage() {
 
               <DifferentialTable differentials={data?.differentialPicks || []} />
             </div>
-          </div>
+            </div>
+          </>
         )}
       </main>
 
       <footer className="bg-[#2B0032] border-t border-[#3B1348] py-4 px-4 text-center text-xs text-[#C9B7D4] mt-8">
         Official Premier League Visual System • FPL Weekly Analyser
       </footer>
+      {selectedPlayer && <PlayerDetails player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />}
     </div>
   );
+}
+
+interface DashboardData {
+  gameweek: number;
+  currentGameweek: number;
+  squad: Array<ProcessedPlayer & { is_captain?: boolean; is_vice_captain?: boolean; is_bench?: boolean }>;
+  captainPicks: ProcessedPlayer[];
+  transferAlerts: Array<{ outPlayer: ProcessedPlayer; inPlayerOptions: ProcessedPlayer[]; reason: string }>;
+  pickTeamTransferPlan?: PickTeamTransferPlan;
+  differentialPicks: ProcessedPlayer[];
+  formTrendChartData: Array<Record<string, string | number>>;
+  aiInsights?: {
+    headline: string;
+    teamRating: number;
+    summary: string;
+    priorityMoves: Array<{
+      title: string;
+      description: string;
+      score: number;
+      kind: 'transfer' | 'captain' | 'risk';
+    }>;
+  };
+  overview: {
+    teamName?: string;
+    playerFirstName?: string;
+    playerLastName?: string;
+    totalPoints?: number;
+    overallRank?: number;
+    eventPoints?: number;
+    averagePoints?: number;
+    highestPoints?: number;
+    squadValue?: number;
+    bank?: number;
+    deadlineTime?: string;
+  };
+  timestamp?: string;
 }

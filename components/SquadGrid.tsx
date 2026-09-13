@@ -2,6 +2,7 @@
 
 import { ProcessedPlayer } from '@/types/fpl';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface SquadGridProps {
   squad: (ProcessedPlayer & {
@@ -9,10 +10,21 @@ interface SquadGridProps {
     is_vice_captain?: boolean;
     is_bench?: boolean;
   })[];
+  onSelectPlayer?: (player: ProcessedPlayer) => void;
 }
 
-export default function SquadGrid({ squad }: SquadGridProps) {
-  const starting11 = squad.filter((p) => !p.is_bench);
+export default function SquadGrid({ squad, onSelectPlayer }: SquadGridProps) {
+  const [positionFilter, setPositionFilter] = useState<'ALL' | ProcessedPlayer['position']>('ALL');
+  const [sortBy, setSortBy] = useState<'position' | 'security' | 'form' | 'price'>('position');
+  const starting11 = useMemo(() => squad
+    .filter((p) => !p.is_bench)
+    .filter((p) => positionFilter === 'ALL' || p.position === positionFilter)
+    .sort((a, b) => {
+      if (sortBy === 'security') return b.minutesSecurityPercent - a.minutesSecurityPercent;
+      if (sortBy === 'form') return b.formAdjustedFixtureScore - a.formAdjustedFixtureScore;
+      if (sortBy === 'price') return b.price - a.price;
+      return a.position.localeCompare(b.position);
+    }), [positionFilter, sortBy, squad]);
   const bench = squad.filter((p) => p.is_bench);
 
   const getPositionBadgeClass = (pos: string) => {
@@ -39,6 +51,12 @@ export default function SquadGrid({ squad }: SquadGridProps) {
   ) => (
     <div
       key={p.id}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelectPlayer?.(p)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onSelectPlayer?.(p);
+      }}
       className={`bg-[#1F0A29] border ${
         p.is_captain
           ? 'border-[#04F5FF] ring-1 ring-[#04F5FF]/50'
@@ -131,9 +149,33 @@ export default function SquadGrid({ squad }: SquadGridProps) {
           <h2 className="text-xl font-bold text-white">
             Starting XI
           </h2>
-          <span className="text-xs text-[#C9B7D4]">
-            Sorted by position
-          </span>
+          <div className="flex items-center gap-2">
+          <label className="sr-only" htmlFor="squad-position-filter">Filter by position</label>
+          <select id="squad-position-filter" value={positionFilter} onChange={(event) => setPositionFilter(event.target.value as typeof positionFilter)} className="rounded-full border border-[#3B1348] bg-[#2B0032] px-2 py-1 text-[11px] text-white focus:outline-none focus:ring-2 focus:ring-[#04F5FF]">
+            <option value="ALL">All</option>
+            <option value="GK">GK</option>
+            <option value="DEF">DEF</option>
+            <option value="MID">MID</option>
+            <option value="FWD">FWD</option>
+          </select>
+          <label className="sr-only" htmlFor="squad-sort">Sort squad</label>
+          <select id="squad-sort" value={sortBy} onChange={(event) => setSortBy(event.target.value as typeof sortBy)} className="hidden rounded-full border border-[#3B1348] bg-[#2B0032] px-2 py-1 text-[11px] text-white sm:block focus:outline-none focus:ring-2 focus:ring-[#04F5FF]">
+            <option value="position">Position</option>
+            <option value="security">Minutes</option>
+            <option value="form">Form-Fx</option>
+            <option value="price">Price</option>
+          </select>
+          <details className="relative text-xs text-[#C9B7D4]">
+            <summary className="cursor-pointer list-none rounded-full border border-[#3B1348] px-3 py-1 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#04F5FF]">
+              Metric guide
+            </summary>
+            <div className="absolute right-0 z-10 mt-2 w-64 rounded-xl border border-[#3B1348] bg-[#2B0032] p-3 text-[11px] shadow-xl">
+              <p><strong className="text-white">Form-Fx:</strong> recent form adjusted for fixture difficulty.</p>
+              <p className="mt-2"><strong className="text-white">Min Sec:</strong> estimated chance of reliable minutes.</p>
+              <p className="mt-2"><strong className="text-white">FDR:</strong> average fixture difficulty over the next four.</p>
+            </div>
+          </details>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {starting11.length > 0 ? (

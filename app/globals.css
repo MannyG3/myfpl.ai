@@ -3,31 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --background: #37003C;
-  --foreground: #FFFFFF;
+  --background: #f2f5f9;
+  --foreground: #0f172a;
+  --panel: #ffffff;
+  --panel-alt: #eef3ff;
+  --fpl-navy: #0b1d3d;
+  --fpl-blue: #16a2ff;
+  --fpl-cyan: #5fe7ff;
+  --fpl-violet: #5b2df0;
+  --border: #dfe7f5;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: #37003C;
-  color: #FFFFFF;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, #eef3ff 0%, #f8fafc 100%);
+  color: var(--foreground);
+  font-family: 'Avenir Next', 'Trebuchet MS', sans-serif;
   min-height: 100vh;
   margin: 0;
   padding: 0;
 }
 
-/* Custom scrollbar matching FPL theme */
+* {
+  box-sizing: border-box;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #2B0032;
+  background: #edf2f7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4A0E5C;
-  border-radius: 4px;
+  background: #c3d3ef;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #963CFF;
+  background: #a4b7dc;
 }

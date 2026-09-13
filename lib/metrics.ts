@@ -1,6 +1,7 @@
 import {
   FPLFixture,
   FPLElementHistory,
+  PickTeamTransferPlan,
   ProcessedPlayer,
   TransferSuggestion,
 } from '@/types/fpl';
@@ -294,6 +295,78 @@ export function recommendCaptains(
       return bScore - aScore;
     })
     .slice(0, 3);
+}
+
+export function buildPickTeamTransferPlan({
+  squad,
+  allPlayers,
+  currentGameweek = 1,
+}: {
+  squad: ProcessedPlayer[];
+  allPlayers: ProcessedPlayer[];
+  currentGameweek?: number;
+}): PickTeamTransferPlan {
+  const transferSuggestions = generateTransferSuggestions(squad, allPlayers);
+
+  const pickTeamTransfers =
+    transferSuggestions.length > 0
+      ? transferSuggestions.slice(0, 2).map((suggestion, index) => ({
+          title: `Transfer ${index + 1}`,
+          summary: `${suggestion.outPlayer.web_name} is the clearest risk flag. Target ${suggestion.inPlayerOptions[0]?.web_name || 'a higher-upside option'} for the next few weeks.`,
+          outPlayer: suggestion.outPlayer,
+          inPlayerOptions: suggestion.inPlayerOptions,
+        }))
+      : [
+          {
+            title: 'No urgent swap',
+            summary:
+              'Your current squad is stable. Keep the XI intact unless news breaks on the bench or rotation risk spikes.',
+          },
+        ];
+
+  const riskyPlayers = squad
+    .filter(
+      (player) =>
+        player.status !== 'available' ||
+        (player.minutesSecurityPercent ?? 0) < 65 ||
+        (player.formAdjustedFixtureScore ?? 0) < 4
+    )
+    .map((player) => player.web_name)
+    .slice(0, 3);
+
+  const nextThreeWeekAnalysis = Array.from({ length: 3 }, (_, offset) => {
+    const gameweek = currentGameweek + offset + 1;
+    const priorityPlayers = squad
+      .filter((player) => player.status === 'available')
+      .sort(
+        (a, b) =>
+          (b.formAdjustedFixtureScore ?? 0) +
+            (b.minutesSecurityPercent ?? 0) / 10 -
+            ((a.formAdjustedFixtureScore ?? 0) + (a.minutesSecurityPercent ?? 0) / 10)
+      )
+      .slice(0, 3)
+      .map((player) => player.web_name);
+
+    const summary =
+      priorityPlayers.length > 0
+        ? `GW ${gameweek}: ${priorityPlayers.join(', ')} look strongest for attack and stability, while ${riskyPlayers.length > 0 ? riskyPlayers.join(', ') : 'bench cover'} needs close monitoring.`
+        : `GW ${gameweek}: no major issues to solve; keep the squad stable and track rotation risk as fixtures land.`;
+
+    return {
+      gameweek,
+      summary,
+      focus:
+        riskyPlayers.length > 0
+          ? 'Rotation risk and fairer upcoming fixtures'
+          : 'Confidence in the current setup',
+      keyPlayers: priorityPlayers.length > 0 ? priorityPlayers : ['Current starters'],
+    };
+  });
+
+  return {
+    pickTeamTransfers,
+    nextThreeWeekAnalysis,
+  };
 }
 
 export function buildAiInsights({

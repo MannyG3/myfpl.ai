@@ -4,9 +4,10 @@ import { ProcessedPlayer } from '@/types/fpl';
 
 interface CaptainPicksProps {
   captainPicks: ProcessedPlayer[];
+  onSelectPlayer?: (player: ProcessedPlayer) => void;
 }
 
-export default function CaptainPicks({ captainPicks }: CaptainPicksProps) {
+export default function CaptainPicks({ captainPicks, onSelectPlayer }: CaptainPicksProps) {
   if (!captainPicks || captainPicks.length === 0) {
     return (
       <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5">
@@ -37,9 +38,11 @@ export default function CaptainPicks({ captainPicks }: CaptainPicksProps) {
           const captainScore = (player.formAdjustedFixtureScore * ease).toFixed(1);
 
           return (
-            <div
+            <button
+              type="button"
+              onClick={() => onSelectPlayer?.(player)}
               key={player.id}
-              className={`bg-[#2B0032] border ${
+              className={`w-full bg-[#2B0032] border text-left transition hover:border-[#04F5FF]/70 focus:outline-none focus:ring-2 focus:ring-[#04F5FF] ${
                 idx === 0
                   ? 'border-[#04F5FF]'
                   : 'border-[#3B1348]'
@@ -83,7 +86,7 @@ export default function CaptainPicks({ captainPicks }: CaptainPicksProps) {
                   </span>
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

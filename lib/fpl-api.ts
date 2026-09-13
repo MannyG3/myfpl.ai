@@ -45,22 +45,22 @@ async function fetchJson<T>(
 }
 
 export async function fetchBootstrapStatic(): Promise<FPLBootstrapData> {
-  return fetchJson<FPLBootstrapData>('/bootstrap-static/', 12000);
+  return fetchJson<FPLBootstrapData>('/bootstrap-static/', 7000);
 }
 
 export async function fetchFixtures(): Promise<FPLFixture[]> {
-  return fetchJson<FPLFixture[]>('/fixtures/', 12000);
+  return fetchJson<FPLFixture[]>('/fixtures/', 7000);
 }
 
 export async function fetchElementSummary(
   playerId: number
 ): Promise<FPLElementSummary> {
-  return fetchJson<FPLElementSummary>(`/element-summary/${playerId}/`, 8000);
+  return fetchJson<FPLElementSummary>(`/element-summary/${playerId}/`, 5000);
 }
 
 export async function fetchEntry(teamId: number): Promise<FPLEntry | null> {
   try {
-    return await fetchJson<FPLEntry>(`/entry/${teamId}/`, 8000);
+    return await fetchJson<FPLEntry>(`/entry/${teamId}/`, 6000);
   } catch (err: any) {
     if (err?.status === 404) {
       console.warn(`FPL entry not found for team ${teamId}`);
@@ -78,7 +78,7 @@ export async function fetchEntryPicks(
   try {
     return await fetchJson<FPLPicksResponse>(
       `/entry/${teamId}/event/${gameweek}/picks/`,
-      8000
+      6000
     );
   } catch (err: any) {
     if (err?.status === 404) {
@@ -92,7 +92,7 @@ export async function fetchEntryPicks(
 
 export async function fetchElementSummaries(
   playerIds: number[],
-  concurrency = 5
+  concurrency = 8
 ): Promise<Map<number, FPLElementSummary>> {
   const results = new Map<number, FPLElementSummary>();
   if (playerIds.length === 0) return results;

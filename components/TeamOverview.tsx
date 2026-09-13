@@ -30,83 +30,56 @@ export default function TeamOverview({
   );
   return (
     <div className="space-y-6">
-      {/* 1. Section Heading: Points & Rankings */}
-      <div>
-        <h2 className="text-xl font-bold text-white mb-3">
-          Points & Rankings
-        </h2>
+      <div className="rounded-2xl border border-[#3B1348] bg-[#1F0A29] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <h2 className="text-lg font-black text-white">Points & Rankings</h2>
+          <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">
+            Live
+          </span>
+        </div>
 
-        {/* 2. Key Stats Row (Number-over-label pairs on dark background, with one highlighted cyan card) */}
-        <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5 space-y-5">
-          {/* Highlighted Stat Card (Bright Cyan #04F5FF Accent Moment) */}
-          <div className="bg-[#04F5FF] text-[#37003C] rounded-lg p-4 font-sans">
-            <span className="text-[#37003C] text-xs font-semibold block mb-0.5">
-              Gameweek {currentGameweek} points
-            </span>
-            <div className="text-5xl font-black leading-none">
-              {eventPoints}
-            </div>
-            <span className="text-xs font-bold text-[#37003C]/80 mt-1 block">
-              Average: {averagePoints} • Highest: {highestPoints}
-            </span>
+        <div className="rounded-2xl bg-gradient-to-br from-[#0b1d3d] via-[#112c5b] to-[#3a3ea6] p-5 text-white shadow-lg shadow-indigo-500/10">
+          <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-200/80">
+            Gameweek {currentGameweek} points
           </div>
+          <div className="mt-2 text-5xl font-black leading-none">{eventPoints}</div>
+          <div className="mt-2 text-sm text-slate-200">
+            Average {averagePoints} • Highest {highestPoints}
+          </div>
+        </div>
 
-          {/* Stats List */}
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#3B1348]">
-            <div>
-              <div className="text-4xl font-extrabold text-white leading-none">
-                {totalPoints}
-              </div>
-              <span className="text-xs text-[#C9B7D4] block mt-1">
-                Overall points
-              </span>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-[#3B1348] bg-[#2B0032] p-3">
+            <div className="text-3xl font-black text-white">{totalPoints}</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#C9B7D4]">Overall</div>
+          </div>
+          <div className="rounded-xl border border-[#3B1348] bg-[#2B0032] p-3">
+            <div className="text-3xl font-black text-white">
+              {overallRank ? overallRank.toLocaleString() : '—'}
             </div>
-
-            <div>
-              <div className="text-4xl font-extrabold text-white leading-none">
-                {overallRank ? overallRank.toLocaleString() : '—'}
-              </div>
-              <span className="text-xs text-[#C9B7D4] block mt-1">
-                Overall rank
-              </span>
-            </div>
-
-            <div>
-              <div className="text-3xl font-extrabold text-white leading-none">
-                {averagePoints}
-              </div>
-              <span className="text-xs text-[#C9B7D4] block mt-1">
-                Average points
-              </span>
-            </div>
-
-            <div>
-              <div className="text-3xl font-extrabold text-white leading-none">
-                {highestPoints}
-              </div>
-              <span className="text-xs text-[#C9B7D4] block mt-1">
-                Highest points
-              </span>
-            </div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#C9B7D4]">Rank</div>
+          </div>
+          <div className="rounded-xl border border-[#3B1348] bg-[#2B0032] p-3">
+            <div className="text-2xl font-black text-white">{averagePoints}</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#C9B7D4]">Average</div>
+          </div>
+          <div className="rounded-xl border border-[#3B1348] bg-[#2B0032] p-3">
+            <div className="text-2xl font-black text-white">{highestPoints}</div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#C9B7D4]">Best GW</div>
           </div>
         </div>
       </div>
 
-      {/* 3. Team Badge & Quick Info */}
-      <div className="bg-[#1F0A29] border border-[#3B1348] rounded-xl p-5">
-        <h2 className="text-xl font-bold text-white mb-3">
-          Team Badge
-        </h2>
+      <div className="rounded-2xl border border-[#3B1348] bg-[#1F0A29] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+        <h2 className="mb-4 text-lg font-black text-white">Club Profile</h2>
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-[#963CFF] to-[#04F5FF] p-1 flex items-center justify-center">
-            <div className="h-full w-full bg-[#1F0A29] rounded-full flex items-center justify-center font-black text-xl text-white">
-              FC
-            </div>
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-indigo-500 to-violet-500 font-black text-xl text-white shadow-lg shadow-indigo-500/25">
+            FC
           </div>
           <div>
-            <span className="text-xs text-[#C9B7D4] block">Squad Value</span>
-            <span className="text-lg font-bold text-white">£{computedValue.toFixed(1)}m</span>
-            <span className="text-xs text-[#C9B7D4] block mt-1">In the bank: £{bank.toFixed(1)}m</span>
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#C9B7D4]">Squad value</div>
+            <div className="mt-1 text-2xl font-black text-white">£{computedValue.toFixed(1)}m</div>
+            <div className="mt-1 text-xs text-[#C9B7D4]">Bank: £{bank.toFixed(1)}m</div>
           </div>
         </div>
       </div>

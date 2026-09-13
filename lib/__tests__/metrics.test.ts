@@ -8,6 +8,7 @@ import {
   calculatePriceChangeRisk,
   recommendCaptains,
   buildAiInsights,
+  buildPickTeamTransferPlan,
   mapStatus,
   estimateMinutesSecurity,
 } from '../metrics';
@@ -141,6 +142,25 @@ test('mapStatus treats unavailable as injured, not available', () => {
   assert.strictEqual(mapStatus('i'), 'injured');
   assert.strictEqual(mapStatus('u'), 'injured');
   assert.strictEqual(mapStatus('s'), 'suspended');
+});
+
+test('buildPickTeamTransferPlan creates recommended transfers and 3-week analysis', () => {
+  const squad: ProcessedPlayer[] = [
+    { id: 1, web_name: 'Star Mid', team_id: 1, position: 'MID', price: 8.5, status: 'available', formAdjustedFixtureScore: 8.8, avgNext4FDR: 2.1, minutesSecurityPercent: 92, differentialScore: 2.1, priceChangeRisk: 'rising', netTransfersEvent: 50000 },
+    { id: 2, web_name: 'Risky Forward', team_id: 2, position: 'FWD', price: 7.4, status: 'available', formAdjustedFixtureScore: 3.4, avgNext4FDR: 3.8, minutesSecurityPercent: 46, differentialScore: 0.8, priceChangeRisk: 'stable', netTransfersEvent: 0 },
+    { id: 3, web_name: 'Solid Defender', team_id: 3, position: 'DEF', price: 5.2, status: 'available', formAdjustedFixtureScore: 6.7, avgNext4FDR: 2.8, minutesSecurityPercent: 88, differentialScore: 1.4, priceChangeRisk: 'stable', netTransfersEvent: 2000 },
+  ];
+  const allPlayers: ProcessedPlayer[] = [
+    ...squad,
+    { id: 99, web_name: 'Upgrade Mid', team_id: 10, position: 'MID', price: 8.8, status: 'available', formAdjustedFixtureScore: 9.1, avgNext4FDR: 2.0, minutesSecurityPercent: 90, differentialScore: 1.9, priceChangeRisk: 'stable', netTransfersEvent: 1000 },
+    { id: 100, web_name: 'Upgrade Forward', team_id: 11, position: 'FWD', price: 7.7, status: 'available', formAdjustedFixtureScore: 5.3, avgNext4FDR: 2.9, minutesSecurityPercent: 78, differentialScore: 1.2, priceChangeRisk: 'stable', netTransfersEvent: 5000 },
+  ];
+
+  const plan = buildPickTeamTransferPlan({ squad, allPlayers, currentGameweek: 7 });
+  assert.ok(plan.pickTeamTransfers.length >= 1);
+  assert.strictEqual(plan.nextThreeWeekAnalysis.length, 3);
+  assert.strictEqual(plan.nextThreeWeekAnalysis[0].gameweek, 8);
+  assert.ok(plan.nextThreeWeekAnalysis[0].summary.length > 0);
 });
 
 test('calculateMinutesSecurity is 0 when history is missing', () => {

@@ -179,3 +179,22 @@ export interface TransferSuggestion {
   inPlayerOptions: ProcessedPlayer[];
   reason: string;
 }
+
+export interface PickTeamTransfer {
+  title: string;
+  summary: string;
+  outPlayer?: ProcessedPlayer;
+  inPlayerOptions?: ProcessedPlayer[];
+}
+
+export interface NextThreeWeekAnalysisEntry {
+  gameweek: number;
+  summary: string;
+  focus: string;
+  keyPlayers: string[];
+}
+
+export interface PickTeamTransferPlan {
+  pickTeamTransfers: PickTeamTransfer[];
+  nextThreeWeekAnalysis: NextThreeWeekAnalysisEntry[];
+}
